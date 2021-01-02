@@ -17,6 +17,18 @@ async function post(parent, args, context, info) {
   return newLink;
 }
 
+async function deletePost(parent, args, context, info) {
+  // const delLink = await context.prisma.link.delete({
+  //   where: { id: Number(args.id) },
+  // });
+  // console.log(delLink);
+
+  // return delLink;
+
+  // 계단식 삭제 지원 문제로 SQL로 삭제
+  context.prisma.$queryRaw`delete from Link WHERE id = ${args.id};`;
+}
+
 async function signup(parent, args, context, info) {
   const password = await bcrypt.hash(args.password, 10);
   const user = await context.prisma.user.create({
@@ -56,7 +68,7 @@ async function vote(parent, args, context, info) {
   const { userId } = context;
   const vote = await context.prisma.vote.findUnique({
     where: {
-      linkId_userId: {
+      linkId_userId_unique: {
         linkId: Number(args.linkId),
         userId: userId,
       },
@@ -80,6 +92,7 @@ async function vote(parent, args, context, info) {
 
 module.exports = {
   post,
+  deletePost,
   signup,
   login,
   vote,

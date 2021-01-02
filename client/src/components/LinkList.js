@@ -40,12 +40,6 @@ const NEW_LINKS_SUBSCRIPTION = gql`
         id
         name
       }
-      votes {
-        id
-        user {
-          id
-        }
-      }
     }
   }
 `;
@@ -77,9 +71,18 @@ const NEW_VOTES_SUBSCRIPTION = gql`
   }
 `;
 
+const getLinksToRender = (isNewPage, data) => {
+  if (isNewPage) {
+    return data.feed.links;
+  }
+  const rankedLinks = data.feed.links.slice();
+  rankedLinks.sort((l1, l2) => l2.votes.length - l1.votes.length);
+  return rankedLinks;
+};
+
 const getQueryVariables = (isNewPage, page) => {
   const skip = isNewPage ? (page - 1) * LINKS_PER_PAGE : 0;
-  const take = isNewPage ? LINKS_PER_PAGE : 100;
+  const take = isNewPage ? LINKS_PER_PAGE : 10;
   const orderBy = { createdAt: "desc" };
   return { take, skip, orderBy };
 };
@@ -94,10 +97,13 @@ const LinkList = () => {
 
   const { data, loading, error, subscribeToMore } = useQuery(FEED_QUERY, {
     variables: getQueryVariables(isNewPage, page),
+    // 네트워크에서 쿼리를 불러오고 캐시와 비교해서 내용이 다를 경우에만 업데이트함
+    fetchPolicy: "cache-and-network",
   });
 
   subscribeToMore({
     document: NEW_LINKS_SUBSCRIPTION,
+    // prev : 이전 데이터, subscriptionData : 서버에서 푸쉬 받은 데이터(document에서 정의한 항목으로 받음)
     updateQuery: (prev, { subscriptionData }) => {
       if (!subscriptionData.data) return prev;
       const newLink = subscriptionData.data.newLink;
@@ -118,17 +124,9 @@ const LinkList = () => {
     document: NEW_VOTES_SUBSCRIPTION,
   });
 
-  const getLinksToRender = (isNewPage, data) => {
-    if (isNewPage) {
-      return data.feed.links;
-    }
-    const rankedLinks = data.feed.links.slice();
-    rankedLinks.sort((l1, l2) => l2.votes.length - l1.votes.length);
-    return rankedLinks;
-  };
-
   return (
     <>
+      <div style={{ width: 400, margin: "100px auto" }}></div>
       {loading && <p>Loading...</p>}
       {error && <pre>{JSON.stringify(error, null, 2)}</pre>}
       {data && (
