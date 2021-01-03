@@ -3,6 +3,7 @@ import Link from "./Link";
 import { useHistory } from "react-router";
 import { useQuery, gql } from "@apollo/client";
 import { LINKS_PER_PAGE } from "../constants";
+import { Pagination } from "antd";
 
 export const FEED_QUERY = gql`
   query FeedQuery($take: Int, $skip: Int, $orderBy: LinkOrderByInput) {
@@ -126,8 +127,7 @@ const LinkList = () => {
 
   return (
     <>
-      <div style={{ width: 400, margin: "100px auto" }}></div>
-      {loading && <p>Loading...</p>}
+      {/* {loading && <p>Loading...</p>} */}
       {error && <pre>{JSON.stringify(error, null, 2)}</pre>}
       {data && (
         <>
@@ -157,6 +157,15 @@ const LinkList = () => {
               >
                 Next
               </div>
+              <Pagination
+                size="small"
+                current={page}
+                total={data.feed.count}
+                defaultPageSize={5}
+                onChange={(page) => {
+                  history.push(`/new/${page}`);
+                }}
+              />
             </div>
           )}
         </>
