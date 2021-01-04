@@ -17,6 +17,20 @@ async function post(parent, args, context, info) {
   return newLink;
 }
 
+async function requestNewPart(parent, args, context, info) {
+  const { userId } = context;
+
+  const newPart = await context.prisma.newPart.create({
+    data: {
+      model: args.model,
+      partNo: args.partNo,
+      requester: { connect: { id: userId } },
+    },
+  });
+
+  return newPart;
+}
+
 async function deletePost(parent, args, context, info) {
   // const delLink = await context.prisma.link.delete({
   //   where: { id: Number(args.id) },
@@ -91,6 +105,7 @@ async function vote(parent, args, context, info) {
 }
 
 module.exports = {
+  requestNewPart,
   post,
   deletePost,
   signup,

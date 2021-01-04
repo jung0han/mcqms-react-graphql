@@ -1,4 +1,5 @@
 import React from "react";
+import { useQuery, gql } from "@apollo/client";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import {
@@ -19,6 +20,25 @@ import {
 } from "antd";
 
 const { Content } = Layout;
+
+export const NEWPARTS_QUERY = gql`
+  query NewPartQuery($filter: String) {
+    newParts(filter: $filter) {
+      id
+      lists {
+        id
+        model
+        partNo
+        createdAt
+        requester {
+          id
+          name
+        }
+      }
+      count
+    }
+  }
+`;
 
 const columns = [
   {
@@ -235,10 +255,15 @@ const onFinish = (values) => {
 const RequestedTable = ({ history }) => {
   const [form] = Form.useForm();
 
+  const test = useQuery(NEWPARTS_QUERY, {
+    fetchPolicy: "cache-and-network",
+  });
+
+  console.log(test);
+
   function handleChange(value) {
     console.log(`selected ${value}`);
   }
-  console.log(history);
 
   return (
     <>

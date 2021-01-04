@@ -24,6 +24,28 @@ async function feed(parent, args, context, info) {
   };
 }
 
+async function newParts(parent, args, context, info) {
+  const where = args.filter
+    ? {
+        OR: [
+          { model: { contains: args.filter } },
+          { partNo: { contains: args.filter } },
+        ],
+      }
+    : {};
+
+  const lists = await context.prisma.newPart.findMany({ where });
+
+  const count = await context.prisma.newPart.count({ where });
+
+  return {
+    id: "main-lists",
+    lists,
+    count,
+  };
+}
+
 module.exports = {
   feed,
+  newParts,
 };

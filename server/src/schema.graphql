@@ -1,5 +1,6 @@
 type Query {
   info: String!
+  newParts(filter: String): NewParts!
   feed(filter: String, skip: Int, take: Int, orderBy: LinkOrderByInput): Feed!
 }
 
@@ -9,8 +10,23 @@ type Feed {
   count: Int!
 }
 
+type NewParts {
+  id: ID!
+  lists: [NewPart!]!
+  count: Int!
+}
+
+type NewPart {
+  id: ID!
+  model: String!
+  partNo: String!
+  requester: User
+  createdAt: DateTime!
+}
+
 type Mutation {
   post(url: String!, description: String!): Link!
+  requestNewPart(model: String!, partNo: String!): NewPart!
   deletePost(id: ID): Link
   signup(email: String!, password: String!, name: String!): AuthPayload
   login(email: String!, password: String!): AuthPayload

@@ -35,3 +35,12 @@ model Vote {
 
   @@unique([linkId, userId], name: "linkId_userId_unique")
 }
+
+model NewPart {
+  id          Int      @id @default(autoincrement())
+  model       String
+  partNo      String   @unique
+  requesterId Int
+  requester   User     @relation(fields: [requesterId], references: [id])
+  createdAt   DateTime @default(now())
+}
