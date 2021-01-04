@@ -14,27 +14,23 @@ import {
   Layout,
   Breadcrumb,
   Tooltip,
+  Space,
+  DatePicker,
 } from "antd";
 
-const { Option } = Select;
 const { Content } = Layout;
-
-const children = [];
-for (let i = 10; i < 36; i++) {
-  children.push(<Option key={i.toString(36) + i}>{i.toString(36) + i}</Option>);
-}
 
 const columns = [
   {
     title: "Model",
     dataIndex: "model",
-    width: 80,
+    fixed: "left",
     sorter: (a, b) => a.model.localeCompare(b.model),
   },
   {
     title: "Part No",
     dataIndex: "partnumber",
-    width: 120,
+    fixed: "left",
     sorter: (a, b) => a.partnumber.localeCompare(b.partnumber),
     render: (text) => {
       return <Link to={`/DQMS/${text}`}>{text}</Link>;
@@ -67,7 +63,6 @@ const columns = [
   {
     title: "Category",
     dataIndex: "category",
-    width: 100,
     filters: [
       {
         text: "회로",
@@ -83,7 +78,6 @@ const columns = [
   {
     title: "Type",
     dataIndex: "type",
-    width: 80,
     filters: [
       {
         text: "New",
@@ -99,13 +93,11 @@ const columns = [
   {
     title: "Seq.",
     dataIndex: "seq",
-    width: 80,
     sorter: (a, b) => a.age - b.age,
   },
   {
     title: "Status",
     dataIndex: "status",
-    width: 120,
     key: "x",
     filters: [
       {
@@ -131,7 +123,6 @@ const columns = [
   {
     title: "Result",
     dataIndex: "result",
-    width: 80,
     filters: [
       {
         text: "OK",
@@ -146,12 +137,10 @@ const columns = [
   {
     title: "Requester",
     dataIndex: "requester",
-    width: 80,
   },
   {
     title: "Tester",
     dataIndex: "tester",
-    width: 80,
   },
 ];
 
@@ -227,10 +216,17 @@ const SearchForm = styled(Form)`
   border: 1px solid #d9d9d9;
   border-radius: 2px;
   margin-bottom: 24px;
-  .SearchInput {
-    margin-right: 10px;
+  .ant-form-item {
+    margin-bottom: 10px;
   }
 `;
+
+const layout = {
+  labelCol: {
+    xxl: { span: 5 },
+    span: 6,
+  },
+};
 
 const onFinish = (values) => {
   console.log("Received values of form: ", values);
@@ -248,7 +244,7 @@ const RequestedTable = ({ history }) => {
     <>
       <Breadcrumb style={{ margin: "16px 0" }}>
         <Breadcrumb.Item>Home</Breadcrumb.Item>
-        <Breadcrumb.Item>Request Status</Breadcrumb.Item>
+        <Breadcrumb.Item>Part DQM</Breadcrumb.Item>
       </Breadcrumb>
       <Content
         className="site-layout-background"
@@ -260,73 +256,88 @@ const RequestedTable = ({ history }) => {
       >
         <StyledPageHeader
           className="site-page-header"
-          title="DQMS"
+          title="Part DQM"
           subTitle="Request Status"
+          extra={[
+            <Button key="2">Operation</Button>,
+            <Button key="1" type="primary">
+              New
+            </Button>,
+          ]}
         />
         <SearchForm
           form={form}
-          name="advanced_search"
-          className="ant-advanced-search-form"
+          {...layout}
+          className="search-form"
           onFinish={onFinish}
+          colon={false}
         >
-          <Row gutter={[16, 16]}>
-            <Col span={8}>
-              <Form.Item
-                className="SearchInput"
-                label="Part No"
-                style={{ marginBottom: 0 }}
-              >
-                <Form.Item name="partnumber">
-                  <Input placeholder="Input birth year" />
-                </Form.Item>
+          <Row gutter={[16]}>
+            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+              <Form.Item name="Model" label="Model">
+                <Input />
               </Form.Item>
             </Col>
-            <Col span={8}>
-              <Form.Item
-                className="SearchInput"
-                label="Birth"
-                style={{ marginBottom: 0 }}
-              >
-                <Form.Item
-                  name="year"
-                  style={{ display: "inline-block", width: "100%" }}
-                >
-                  <Input placeholder="Input birth year" />
-                </Form.Item>
+            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+              <Form.Item name="PartNo" label="Part No">
+                <Input />
               </Form.Item>
             </Col>
-            <Col span={8}>
-              <Form.Item
-                className="SearchInput"
-                label="Birth"
-                style={{ marginBottom: 0 }}
-              >
+            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+              <Form.Item name="Vender" label="Vender">
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+              <Form.Item name="Requester" label="Requester">
                 <Select
-                  mode="multiple"
+                  mode="tags"
                   allowClear
-                  style={{ width: "100%" }}
-                  placeholder="Please select"
-                  defaultValue={["a10", "c12"]}
                   onChange={handleChange}
-                >
-                  {children}
-                </Select>
+                  notFoundContent=""
+                ></Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+              <Form.Item name="Staff" label="Staff">
+                <Select
+                  mode="tags"
+                  allowClear
+                  onChange={handleChange}
+                  notFoundContent=""
+                ></Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+              <Form.Item name="Tester" label="Tester">
+                <Select
+                  mode="tags"
+                  allowClear
+                  onChange={handleChange}
+                  notFoundContent=""
+                ></Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+              <Form.Item name="Date" label="Date">
+                <DatePicker.RangePicker />
               </Form.Item>
             </Col>
           </Row>
           <Row>
             <Col span={24} style={{ textAlign: "right" }}>
-              <Button type="primary" htmlType="submit">
-                Search
-              </Button>
-              <Button
-                style={{ margin: "0 8px" }}
-                onClick={() => {
-                  form.resetFields();
-                }}
-              >
-                Clear
-              </Button>
+              <Space>
+                <Button type="primary" htmlType="submit">
+                  Search
+                </Button>
+                <Button
+                  onClick={() => {
+                    form.resetFields();
+                  }}
+                >
+                  Clear
+                </Button>
+              </Space>
             </Col>
           </Row>
         </SearchForm>
@@ -335,6 +346,8 @@ const RequestedTable = ({ history }) => {
           dataSource={data}
           onChange={onChange}
           size="small"
+          bordered
+          scroll={{ x: 1300 }}
           onRow={(record, rowIndex) => {
             return {
               onClick: (event) => {
