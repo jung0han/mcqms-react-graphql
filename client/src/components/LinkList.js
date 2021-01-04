@@ -127,7 +127,7 @@ const LinkList = () => {
 
   return (
     <>
-      {/* {loading && <p>Loading...</p>} */}
+      {loading && <p>Loading...</p>}
       {error && <pre>{JSON.stringify(error, null, 2)}</pre>}
       {data && (
         <>
