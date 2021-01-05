@@ -1,6 +1,6 @@
 type Query {
   info: String!
-  newParts(filter: String): NewParts!
+  newPartList(filter: String): NewPartList!
   feed(filter: String, skip: Int, take: Int, orderBy: LinkOrderByInput): Feed!
 }
 
@@ -10,7 +10,7 @@ type Feed {
   count: Int!
 }
 
-type NewParts {
+type NewPartList {
   id: ID!
   lists: [NewPart!]!
   count: Int!
@@ -20,15 +20,47 @@ type NewPart {
   id: ID!
   model: String!
   partNo: String!
+  vender: Vender
+  category: String
+  type: String
+  sequence: Int
+  status: String
   requester: User
+  planner: User
+  tester: User
+  User: [User]
+  createdAt: DateTime!
+}
+
+type Vender {
+  id: ID!
+  name: String!
+  code: String!
+  addedBy: User
   createdAt: DateTime!
 }
 
 type Mutation {
   post(url: String!, description: String!): Link!
-  requestNewPart(model: String!, partNo: String!): NewPart!
+  addNewPart(
+    model: String!
+    partNo: String!
+    venderId: ID!
+    category: String!
+    type: String!
+    sequence: Int
+    status: String
+    plannerId: ID!
+    testerId: ID!
+  ): NewPart!
+  addVender(name: String!, code: String!): Vender!
   deletePost(id: ID): Link
-  signup(email: String!, password: String!, name: String!): AuthPayload
+  signup(
+    email: String!
+    department: String!
+    password: String!
+    name: String!
+  ): AuthPayload
   login(email: String!, password: String!): AuthPayload
   vote(linkId: ID!): Vote
 }
@@ -47,7 +79,9 @@ type User {
   id: ID!
   name: String!
   email: String!
+  department: String!
   links: [Link!]!
+  newParts: [NewPart!]!
   votes: Vote
 }
 

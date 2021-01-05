@@ -24,7 +24,7 @@ async function feed(parent, args, context, info) {
   };
 }
 
-async function newParts(parent, args, context, info) {
+async function newPartList(parent, args, context, info) {
   const where = args.filter
     ? {
         OR: [
@@ -47,5 +47,5 @@ async function newParts(parent, args, context, info) {
 
 module.exports = {
   feed,
-  newParts,
+  newPartList,
 };

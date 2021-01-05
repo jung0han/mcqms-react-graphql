@@ -23,14 +23,29 @@ const { Content } = Layout;
 
 export const NEWPARTS_QUERY = gql`
   query NewPartQuery($filter: String) {
-    newParts(filter: $filter) {
+    newPartList(filter: $filter) {
       id
       lists {
         id
         model
         partNo
+        vender {
+          name
+        }
+        category
+        type
+        sequence
+        status
         createdAt
         requester {
+          id
+          name
+        }
+        planner {
+          id
+          name
+        }
+        tester {
           id
           name
         }
@@ -49,36 +64,26 @@ const columns = [
   },
   {
     title: "Part No",
-    dataIndex: "partnumber",
+    dataIndex: "partNo",
     fixed: "left",
     sorter: (a, b) => a.partnumber.localeCompare(b.partnumber),
     render: (text) => {
-      return <Link to={`/DQMS/${text}`}>{text}</Link>;
+      return <Link to={`/dqm/${text}`}>{text}</Link>;
     },
   },
-  {
-    title: "Part Name",
-    dataIndex: "name",
-    ellipsis: {
-      showTitle: false,
-    },
-    render: (name) => (
-      <Tooltip placement="topLeft" title={name}>
-        {name}
-      </Tooltip>
-    ),
-  },
+  // {
+  //   title: "Part Name",
+  //   dataIndex: "name",
+  //   ellipsis: {
+  //     showTitle: false,
+  //   },
+  // },
   {
     title: "Vendor",
-    dataIndex: "vendor",
+    dataIndex: ["vender", "name"],
     ellipsis: {
       showTitle: false,
     },
-    render: (vendor) => (
-      <Tooltip placement="topLeft" title={vendor}>
-        {vendor}
-      </Tooltip>
-    ),
   },
   {
     title: "Category",
@@ -112,7 +117,7 @@ const columns = [
   },
   {
     title: "Seq.",
-    dataIndex: "seq",
+    dataIndex: "sequence",
     sorter: (a, b) => a.age - b.age,
   },
   {
@@ -137,8 +142,7 @@ const columns = [
         value: "complate",
       },
     ],
-    onFilter: (value, record) => record.status[1].indexOf(value) === 0,
-    render: (text) => <Badge status={text[0]} text={text[1]} />,
+    onFilter: (value, record) => record.status.indexOf(value) === 0,
   },
   {
     title: "Result",
@@ -156,67 +160,11 @@ const columns = [
   },
   {
     title: "Requester",
-    dataIndex: "requester",
+    dataIndex: ["requester", "name"],
   },
   {
     title: "Tester",
-    dataIndex: "tester",
-  },
-];
-
-const data = [
-  {
-    key: "1",
-    model: "LMF100N",
-    partnumber: "EAB23456784",
-    type: "New",
-    seq: 1,
-    name: "PMIC",
-    category: "회로",
-    vendor: "Qualcomm",
-    requester: "아무개",
-    tester: "홍길동",
-    status: ["warning", "waiting"],
-  },
-  {
-    key: "2",
-    model: "LMF100N",
-    partnumber: "EAB23456789",
-    type: "4M",
-    seq: 2,
-    name: "PMIC",
-    category: "회로",
-    vendor: "Qualcomm",
-    requester: "아무개",
-    tester: "홍길동",
-    status: ["processing", "testing"],
-  },
-  {
-    key: "3",
-    model: "LMF100N",
-    partnumber: "EAB23456788",
-    type: "New",
-    seq: 1,
-    name: "AP",
-    category: "회로",
-    vendor: "Qualcomm",
-    requester: "아무개",
-    tester: "홍길동",
-    status: ["default", "complate"],
-    result: "OK",
-  },
-  {
-    key: "4",
-    model: "LMF100N",
-    partnumber: "EAB23456787",
-    type: "New",
-    seq: 1,
-    name: "Front Cover",
-    category: "기구",
-    vendor: "BYD",
-    requester: "아무개",
-    tester: "홍길동",
-    status: ["error", "rejected"],
+    dataIndex: ["tester", "name"],
   },
 ];
 
@@ -255,11 +203,11 @@ const onFinish = (values) => {
 const RequestedTable = ({ history }) => {
   const [form] = Form.useForm();
 
-  const test = useQuery(NEWPARTS_QUERY, {
+  const newPartList = useQuery(NEWPARTS_QUERY, {
     fetchPolicy: "cache-and-network",
   });
 
-  console.log(test);
+  const data = newPartList.data.newPartList.lists;
 
   function handleChange(value) {
     console.log(`selected ${value}`);
@@ -284,7 +232,7 @@ const RequestedTable = ({ history }) => {
           title="Part DQM"
           subTitle="Request Status"
           extra={[
-            <Button key="2">Operation</Button>,
+            <Button key="2">Reload</Button>,
             <Button key="1" type="primary">
               New
             </Button>,

@@ -17,14 +17,33 @@ async function post(parent, args, context, info) {
   return newLink;
 }
 
-async function requestNewPart(parent, args, context, info) {
+async function addNewPart(parent, args, context, info) {
   const { userId } = context;
 
   const newPart = await context.prisma.newPart.create({
     data: {
       model: args.model,
       partNo: args.partNo,
+      vender: { connect: { id: Number(args.venderId) } },
+      category: args.category,
+      type: args.type,
       requester: { connect: { id: userId } },
+      planner: { connect: { id: Number(args.plannerId) } },
+      tester: { connect: { id: Number(args.testerId) } },
+    },
+  });
+
+  return newPart;
+}
+
+async function addVender(parent, args, context, info) {
+  const { userId } = context;
+
+  const newPart = await context.prisma.newPart.create({
+    data: {
+      model: args.model,
+      partNo: args.partNo,
+      addedBy: { connect: { id: userId } },
     },
   });
 
@@ -105,7 +124,8 @@ async function vote(parent, args, context, info) {
 }
 
 module.exports = {
-  requestNewPart,
+  addNewPart,
+  addVender,
   post,
   deletePost,
   signup,

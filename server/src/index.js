@@ -6,6 +6,8 @@ const Subscription = require("./resolvers/Subscription");
 const User = require("./resolvers/User");
 const Link = require("./resolvers/Link");
 const Vote = require("./resolvers/Vote");
+const NewPart = require("./resolvers/NewPart");
+const Vender = require("./resolvers/Vender");
 const fs = require("fs");
 const path = require("path");
 const { getUserId } = require("./utils");
@@ -23,6 +25,8 @@ const resolvers = {
   User,
   Link,
   Vote,
+  NewPart,
+  Vender,
 };
 
 const server = new ApolloServer({

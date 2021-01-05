@@ -18,12 +18,18 @@ model Link {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  name     String
-  email    String @unique
-  password String
-  links    Link[]
-  votes    Vote[]
+  id                Int       @id @default(autoincrement())
+  name              String
+  email             String    @unique
+  department        String
+  isAdmin           Boolean   @default(false)
+  password          String
+  links             Link[]
+  votes             Vote[]
+  requesterNewParts NewPart[] @relation("requesterNewParts")
+  planerNewParts    NewPart[] @relation("plannerNewParts")
+  testerNewParts    NewPart[] @relation("testerNewParts")
+  Vender            Vender[]
 }
 
 model Vote {
@@ -40,7 +46,27 @@ model NewPart {
   id          Int      @id @default(autoincrement())
   model       String
   partNo      String   @unique
+  vender      Vender   @relation(fields: [venderId], references: [id])
+  venderId    Int
+  category    String
+  type        String
+  sequence    Int      @default(1)
+  status      String   @default("waiting")
   requesterId Int
-  requester   User     @relation(fields: [requesterId], references: [id])
+  requester   User     @relation("requesterNewParts", fields: [requesterId], references: [id])
+  plannerId   Int
+  planner     User     @relation("plannerNewParts", fields: [plannerId], references: [id])
+  testerId    Int
+  tester      User     @relation("testerNewParts", fields: [testerId], references: [id])
   createdAt   DateTime @default(now())
+}
+
+model Vender {
+  id        Int       @id @default(autoincrement())
+  name      String
+  code      String    @unique
+  addedBy   User      @relation(fields: [addedById], references: [id])
+  addedById Int
+  createdAt DateTime  @default(now())
+  NewPart   NewPart[]
 }
