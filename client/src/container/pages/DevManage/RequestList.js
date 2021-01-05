@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery, gql } from "@apollo/client";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
@@ -6,16 +6,16 @@ import {
   Table,
   PageHeader,
   Button,
+  Modal,
   Form,
   Row,
   Col,
   Input,
   Select,
-  Badge,
   Layout,
   Breadcrumb,
-  Tooltip,
   Space,
+  Radio,
   DatePicker,
 } from "antd";
 
@@ -71,13 +71,13 @@ const columns = [
       return <Link to={`/dqm/${text}`}>{text}</Link>;
     },
   },
-  // {
-  //   title: "Part Name",
-  //   dataIndex: "name",
-  //   ellipsis: {
-  //     showTitle: false,
-  //   },
-  // },
+  {
+    title: "Part Name",
+    dataIndex: "name",
+    ellipsis: {
+      showTitle: false,
+    },
+  },
   {
     title: "Vendor",
     dataIndex: ["vender", "name"],
@@ -189,6 +189,84 @@ const SearchForm = styled(Form)`
   }
 `;
 
+const CreateForm = ({ visible, onCreate, onCancel }) => {
+  const [form] = Form.useForm();
+  return (
+    <Modal
+      visible={visible}
+      title="Create a new part"
+      okText="Create"
+      cancelText="Cancel"
+      onCancel={onCancel}
+      onOk={() => {
+        form
+          .validateFields()
+          .then((values) => {
+            form.resetFields();
+            onCreate(values);
+          })
+          .catch((info) => {
+            console.log("Validate Failed:", info);
+          });
+      }}
+      width={1000}
+      mask={false}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        name="form_in_modal"
+        initialValues={{
+          modifier: "public",
+        }}
+      >
+        <Row gutter={[16]}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+            <Form.Item
+              name="model"
+              label="Model"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input the Model!",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col span={12} xxl={8}>
+            <Form.Item
+              name="partNo"
+              label="Part No"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input the Part number!",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          </Col>
+          <Form.Item name="description" label="Description">
+            <Input type="textarea" />
+          </Form.Item>
+        </Row>
+        <Form.Item
+          name="modifier"
+          className="collection-create-form_last-form-item"
+        >
+          <Radio.Group>
+            <Radio value="public">Public</Radio>
+            <Radio value="private">Private</Radio>
+          </Radio.Group>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
+
 const layout = {
   labelCol: {
     xxl: { span: 5 },
@@ -201,17 +279,22 @@ const onFinish = (values) => {
 };
 
 const RequestedTable = ({ history }) => {
+  const [visible, setVisible] = useState(false);
+
   const [form] = Form.useForm();
 
-  const newPartList = useQuery(NEWPARTS_QUERY, {
+  const { data, loading, error } = useQuery(NEWPARTS_QUERY, {
     fetchPolicy: "cache-and-network",
   });
-
-  const data = newPartList.data.newPartList.lists;
 
   function handleChange(value) {
     console.log(`selected ${value}`);
   }
+
+  const onCreate = (values) => {
+    console.log("Received values of form: ", values);
+    setVisible(false);
+  };
 
   return (
     <>
@@ -233,10 +316,23 @@ const RequestedTable = ({ history }) => {
           subTitle="Request Status"
           extra={[
             <Button key="2">Reload</Button>,
-            <Button key="1" type="primary">
+            <Button
+              key="1"
+              type="primary"
+              onClick={() => {
+                setVisible(true);
+              }}
+            >
               New
             </Button>,
           ]}
+        />
+        <CreateForm
+          visible={visible}
+          onCreate={onCreate}
+          onCancel={() => {
+            setVisible(false);
+          }}
         />
         <SearchForm
           form={form}
@@ -314,21 +410,25 @@ const RequestedTable = ({ history }) => {
             </Col>
           </Row>
         </SearchForm>
-        <Table
-          columns={columns}
-          dataSource={data}
-          onChange={onChange}
-          size="small"
-          bordered
-          scroll={{ x: 1300 }}
-          onRow={(record, rowIndex) => {
-            return {
-              onClick: (event) => {
-                console.log(event, record, rowIndex);
-              },
-            };
-          }}
-        />
+        {loading && <p>Loading...</p>}
+        {error && <pre>{JSON.stringify(error, null, 2)}</pre>}
+        {data && (
+          <Table
+            columns={columns}
+            dataSource={data.newPartList.lists}
+            onChange={onChange}
+            size="small"
+            bordered
+            scroll={{ x: 1300 }}
+            onRow={(record, rowIndex) => {
+              return {
+                onClick: (event) => {
+                  console.log(event, record, rowIndex);
+                },
+              };
+            }}
+          />
+        )}
       </Content>
     </>
   );
