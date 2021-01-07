@@ -20,6 +20,7 @@ import {
 } from "antd";
 
 const { Content } = Layout;
+const { Option } = Select;
 
 export const NEWPARTS_QUERY = gql`
   query NewPartQuery($filter: String) {
@@ -187,6 +188,9 @@ const SearchForm = styled(Form)`
   .ant-form-item {
     margin-bottom: 10px;
   }
+  .ant-form-item-label {
+    padding-bottom: 0px;
+  }
 `;
 
 const CreateForm = ({ visible, onCreate, onCancel }) => {
@@ -198,6 +202,7 @@ const CreateForm = ({ visible, onCreate, onCancel }) => {
       okText="Create"
       cancelText="Cancel"
       onCancel={onCancel}
+      width={600}
       onOk={() => {
         form
           .validateFields()
@@ -209,49 +214,52 @@ const CreateForm = ({ visible, onCreate, onCancel }) => {
             console.log("Validate Failed:", info);
           });
       }}
-      width={1000}
       mask={false}
     >
       <Form
         form={form}
-        layout="vertical"
         name="form_in_modal"
+        colon={false}
         initialValues={{
           modifier: "public",
         }}
       >
         <Row gutter={[16]}>
-          <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
-            <Form.Item
-              name="model"
-              label="Model"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input the Model!",
-                },
-              ]}
-            >
-              <Input />
+          <Col span={12}>
+            <Form.Item name="model">
+              <Input addonBefore="Model" />
             </Form.Item>
           </Col>
-          <Col span={12} xxl={8}>
-            <Form.Item
-              name="partNo"
-              label="Part No"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input the Part number!",
-                },
-              ]}
-            >
-              <Input />
+          <Col span={12}>
+            <Form.Item name="partNo">
+              <Input addonBefore="Part No" />
             </Form.Item>
           </Col>
-          <Form.Item name="description" label="Description">
-            <Input type="textarea" />
-          </Form.Item>
+          <Col span={12}>
+            <Form.Item name="vendor">
+              <Input addonBefore="Vendor" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="partNo">
+              <Input addonBefore="Category" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="partNo">
+              <Input addonBefore="Type" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="partNo">
+              <Input addonBefore="품번" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="partNo">
+              <Input addonBefore="품번" />
+            </Form.Item>
+          </Col>
         </Row>
         <Form.Item
           name="modifier"
@@ -338,58 +346,82 @@ const RequestedTable = ({ history }) => {
           form={form}
           {...layout}
           className="search-form"
+          layout="vertical"
           onFinish={onFinish}
           colon={false}
         >
           <Row gutter={[16]}>
-            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
+            {/* xs={} sm={} md={} lg={} xl={} xxl={} */}
+            <Col span={6}>
               <Form.Item name="Model" label="Model">
-                <Input />
+                <Input placeholder="ex) LGM123" />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
-              <Form.Item name="PartNo" label="Part No">
-                <Input />
+            <Col span={6}>
+              <Form.Item name="PartNo" label="Model">
+                <Input placeholder="ex) EAB12345678" />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
-              <Form.Item name="Vender" label="Vender">
-                <Input />
+            <Col span={6}>
+              <Form.Item name="PartName" label="Model">
+                <Input placeholder="품명" />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
-              <Form.Item name="Requester" label="Requester">
-                <Select
-                  mode="tags"
-                  allowClear
-                  onChange={handleChange}
-                  notFoundContent=""
-                ></Select>
+            <Col span={6}>
+              <Form.Item name="Vender" label="Model">
+                <Input placeholder="협력사" />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
-              <Form.Item name="Staff" label="Staff">
-                <Select
-                  mode="tags"
-                  allowClear
-                  onChange={handleChange}
-                  notFoundContent=""
-                ></Select>
+          </Row>
+          <Row gutter={[16]}>
+            <Col span={12}>
+              <Form.Item label="Model">
+                <Input.Group compact>
+                  <Form.Item
+                    name={["address", "province"]}
+                    noStyle
+                    rules={[
+                      { required: true, message: "Province is required" },
+                    ]}
+                  >
+                    <Select style={{ width: "30%" }} placeholder="province">
+                      <Option value="0">전체</Option>
+                      <Option value="1">의뢰자</Option>
+                      <Option value="2">검토자</Option>
+                      <Option value="3">승인자</Option>
+                    </Select>
+                  </Form.Item>
+                  <Form.Item
+                    name={["address", "street"]}
+                    noStyle
+                    label="Model"
+                    rules={[{ required: true, message: "Street is required" }]}
+                  >
+                    <Input
+                      style={{ width: "70%" }}
+                      placeholder="Input street"
+                    />
+                  </Form.Item>
+                </Input.Group>
               </Form.Item>
             </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
-              <Form.Item name="Tester" label="Tester">
-                <Select
-                  mode="tags"
-                  allowClear
-                  onChange={handleChange}
-                  notFoundContent=""
-                ></Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} md={12} lg={12} xl={8} xxl={6}>
-              <Form.Item name="Date" label="Date">
-                <DatePicker.RangePicker />
+            <Col span={12}>
+              <Form.Item label="Model">
+                <Input.Group compact>
+                  <Form.Item
+                    name={["address", "province"]}
+                    noStyle
+                    rules={[
+                      { required: true, message: "Province is required" },
+                    ]}
+                  >
+                    <Select style={{ width: "30%" }} placeholder="province">
+                      <Option value="0">등록일자</Option>
+                      <Option value="1">승인일자</Option>
+                    </Select>
+                    <DatePicker.RangePicker style={{ width: "70%" }} />
+                  </Form.Item>
+                </Input.Group>
               </Form.Item>
             </Col>
           </Row>
@@ -415,6 +447,7 @@ const RequestedTable = ({ history }) => {
         {data && (
           <Table
             columns={columns}
+            rowKey="id"
             dataSource={data.newPartList.lists}
             onChange={onChange}
             size="small"
