@@ -24,7 +24,7 @@ async function addNewPart(parent, args, context, info) {
     data: {
       model: args.model,
       partNo: args.partNo,
-      vender: { connect: { id: Number(args.venderId) } },
+      vendor: { connect: { id: Number(args.vendorId) } },
       category: args.category,
       type: args.type,
       requester: { connect: { id: userId } },
@@ -36,18 +36,38 @@ async function addNewPart(parent, args, context, info) {
   return newPart;
 }
 
-async function addVender(parent, args, context, info) {
+async function addVendor(parent, args, context, info) {
   const { userId } = context;
 
   const newPart = await context.prisma.newPart.create({
     data: {
-      model: args.model,
-      partNo: args.partNo,
+      name: args.name,
+      code: args.code,
       addedBy: { connect: { id: userId } },
     },
   });
 
   return newPart;
+}
+
+async function addPart(parent, args, context, info) {
+  const { userId } = context;
+
+  const addPart = await context.prisma.part.create({
+    data: {
+      partNo: args.partNo,
+      partName: args.partName,
+      vendor: args.vendor,
+      category: args.category,
+      addedBy: { connect: { id: userId } },
+    },
+  });
+
+  return addPart;
+}
+
+async function deletePart(parent, args, context, info) {
+  context.prisma.$queryRaw`delete from Part WHERE id = ${args.id};`;
 }
 
 async function deletePost(parent, args, context, info) {
@@ -125,8 +145,10 @@ async function vote(parent, args, context, info) {
 
 module.exports = {
   addNewPart,
-  addVender,
+  addPart,
+  addVendor,
   post,
+  deletePart,
   deletePost,
   signup,
   login,

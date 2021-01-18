@@ -274,6 +274,7 @@ const RequestedTable = ({ history }) => {
               <Form.Item
                 className="SearchInput"
                 label="Part No"
+                name="part_no"
                 style={{ marginBottom: 0 }}
               >
                 <Form.Item name="partnumber">
@@ -284,6 +285,7 @@ const RequestedTable = ({ history }) => {
             <Col span={8}>
               <Form.Item
                 className="SearchInput"
+                name="birth"
                 label="Birth"
                 style={{ marginBottom: 0 }}
               >

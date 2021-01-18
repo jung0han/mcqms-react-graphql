@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, useLazyQuery, gql, useMutation } from "@apollo/client";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import {
@@ -17,6 +17,7 @@ import {
   Space,
   Radio,
   DatePicker,
+  Spin,
 } from "antd";
 
 const { Content } = Layout;
@@ -30,7 +31,7 @@ export const NEWPARTS_QUERY = gql`
         id
         model
         partNo
-        vender {
+        vendor {
           name
         }
         category
@@ -52,6 +53,42 @@ export const NEWPARTS_QUERY = gql`
         }
       }
       count
+    }
+  }
+`;
+
+export const USER_QUERY = gql`
+  query UserQuery($filter: String) {
+    userList(filter: $filter) {
+      id
+      lists {
+        id
+        name
+        department
+      }
+      count
+    }
+  }
+`;
+
+const CREATE_NEWPART_MUTATION = gql`
+  mutation NewPartMutation(
+    $model: String!
+    $partNo: String!
+    $vendorId: ID!
+    $category: String!
+    $plannerId: ID!
+    $testerId: ID!
+  ) {
+    addNewPart(
+      model: $model
+      partNo: $partNo
+      vendorId: $vendorId
+      category: $category
+      plannerId: $plannerId
+      testerId: $testerId
+    ) {
+      id
     }
   }
 `;
@@ -81,7 +118,7 @@ const columns = [
   },
   {
     title: "Vendor",
-    dataIndex: ["vender", "name"],
+    dataIndex: ["vendor", "name"],
     ellipsis: {
       showTitle: false,
     },
@@ -190,19 +227,46 @@ const SearchForm = styled(Form)`
   }
   .ant-form-item-label {
     padding-bottom: 0px;
+    label {
+      font-weight: bold;
+      color: rgb(118, 118, 118);
+    }
   }
 `;
 
 const CreateForm = ({ visible, onCreate, onCancel }) => {
   const [form] = Form.useForm();
+  const [timer, setTimer] = useState(0);
+
+  const [executeSearch, { data, loading, called }] = useLazyQuery(USER_QUERY, {
+    fetchPolicy: "cache-and-network",
+  });
+
+  const handleSearch = (value) => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    const newTimer = setTimeout(() => {
+      if (value) {
+        executeSearch({
+          variables: { filter: value },
+        });
+      }
+    }, 800);
+
+    setTimer(newTimer);
+  };
+
   return (
     <Modal
       visible={visible}
-      title="Create a new part"
+      title="신규 부품 생성"
       okText="Create"
       cancelText="Cancel"
       onCancel={onCancel}
       width={600}
+      style={{ left: 100 }}
       onOk={() => {
         form
           .validateFields()
@@ -219,45 +283,96 @@ const CreateForm = ({ visible, onCreate, onCancel }) => {
       <Form
         form={form}
         name="form_in_modal"
-        colon={false}
+        hideRequiredMark
+        layout="vertical"
         initialValues={{
           modifier: "public",
         }}
       >
         <Row gutter={[16]}>
           <Col span={12}>
-            <Form.Item name="model">
-              <Input addonBefore="Model" />
+            <Form.Item
+              name="model"
+              label="Model"
+              rules={[{ required: true, message: "Please enter model" }]}
+            >
+              <Input placeholder="Please enter model" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="partNo">
-              <Input addonBefore="Part No" />
+            <Form.Item
+              name="partNo"
+              label="Part Number"
+              rules={[{ required: true, message: "Please enter model" }]}
+            >
+              <Input placeholder="Please enter model" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="vendor">
-              <Input addonBefore="Vendor" />
+            <Form.Item
+              name="vendorId"
+              label="Vendor name"
+              rules={[{ required: true, message: "Please enter model" }]}
+            >
+              <Input placeholder="Please enter model" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="partNo">
-              <Input addonBefore="Category" />
+            <Form.Item
+              name="category"
+              label="Category"
+              rules={[{ required: true, message: "Please select an owner" }]}
+            >
+              <Select placeholder="Please select an owner">
+                <Option value="circuit">Circuit</Option>
+                <Option value="mechanical">Mechanical</Option>
+              </Select>
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="partNo">
-              <Input addonBefore="Type" />
+            <Form.Item
+              name="plannerId"
+              label="Planner"
+              rules={[{ required: true, message: "Please enter model" }]}
+            >
+              <Select
+                showSearch
+                placeholder="Select users"
+                notFoundContent={
+                  called && loading ? <Spin size="small" /> : null
+                }
+                filterOption={false}
+                onSearch={handleSearch}
+              >
+                {data &&
+                  data.userList.lists.map((user) => (
+                    <Option key={user.id}>{user.name}</Option>
+                  ))}
+              </Select>
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="partNo">
-              <Input addonBefore="품번" />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item name="partNo">
-              <Input addonBefore="품번" />
+            <Form.Item
+              name="testerId"
+              label="Tester"
+              rules={[{ required: true, message: "Please enter model" }]}
+            >
+              <Select
+                showSearch
+                placeholder="Select users"
+                notFoundContent={
+                  called && loading ? <Spin size="small" /> : null
+                }
+                filterOption={false}
+                onSearch={(e) => {
+                  handleSearch(e);
+                }}
+              >
+                {data &&
+                  data.userList.lists.map((user) => (
+                    <Option key={user.id}>{user.name}</Option>
+                  ))}
+              </Select>
             </Form.Item>
           </Col>
         </Row>
@@ -275,32 +390,38 @@ const CreateForm = ({ visible, onCreate, onCancel }) => {
   );
 };
 
-const layout = {
-  labelCol: {
-    xxl: { span: 5 },
-    span: 6,
-  },
-};
-
-const onFinish = (values) => {
-  console.log("Received values of form: ", values);
-};
+// const layout = {
+//   labelCol: { span: 12 },
+// };
 
 const RequestedTable = ({ history }) => {
   const [visible, setVisible] = useState(false);
 
   const [form] = Form.useForm();
 
-  const { data, loading, error } = useQuery(NEWPARTS_QUERY, {
+  const { data, loading, error, refetch } = useQuery(NEWPARTS_QUERY, {
     fetchPolicy: "cache-and-network",
   });
 
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-  }
+  const [createNewPart] = useMutation(CREATE_NEWPART_MUTATION);
+
+  const onFinish = (values) => {
+    console.log("Received values of form: ", values);
+  };
 
   const onCreate = (values) => {
-    console.log("Received values of form: ", values);
+    createNewPart({
+      variables: {
+        model: values.model,
+        partNo: values.partNo,
+        vendorId: values.vendorId,
+        category: values.category,
+        type: values.type,
+        plannerId: values.plannerId,
+        testerId: values.testerId,
+      },
+    });
+    refetch();
     setVisible(false);
   };
 
@@ -344,7 +465,7 @@ const RequestedTable = ({ history }) => {
         />
         <SearchForm
           form={form}
-          {...layout}
+          // {...layout}
           className="search-form"
           layout="vertical"
           onFinish={onFinish}
@@ -352,74 +473,101 @@ const RequestedTable = ({ history }) => {
         >
           <Row gutter={[16]}>
             {/* xs={} sm={} md={} lg={} xl={} xxl={} */}
-            <Col span={6}>
-              <Form.Item name="Model" label="Model">
+            <Col lg={6} xl={3}>
+              <Form.Item name="model" label="Model">
                 <Input placeholder="ex) LGM123" />
               </Form.Item>
             </Col>
-            <Col span={6}>
-              <Form.Item name="PartNo" label="Model">
+            <Col lg={6} xl={3}>
+              <Form.Item name="partNo" label="Part Number">
                 <Input placeholder="ex) EAB12345678" />
               </Form.Item>
             </Col>
-            <Col span={6}>
-              <Form.Item name="PartName" label="Model">
-                <Input placeholder="품명" />
+            <Col lg={6} xl={3}>
+              <Form.Item name="PartName" label="Part Name">
+                <Input placeholder="ex) pOLED" />
               </Form.Item>
             </Col>
-            <Col span={6}>
-              <Form.Item name="Vender" label="Model">
-                <Input placeholder="협력사" />
+            <Col lg={6} xl={3}>
+              <Form.Item name="vendorId" label="Vendor">
+                <Input placeholder="ex) BOE" />
+              </Form.Item>
+            </Col>
+            <Col lg={6} xl={3}>
+              <Form.Item name="category" label="Category" initialValue="all">
+                <Select>
+                  <Option value="all">All</Option>
+                  <Option value="circuit">Circuit</Option>
+                  <Option value="mechanical">Mechanical</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col lg={6} xl={3}>
+              <Form.Item name="type" label="Type" initialValue="all">
+                <Select>
+                  <Option value="all">All</Option>
+                  <Option value="new">New</Option>
+                  <Option value="change">4M Change</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col lg={6} xl={3}>
+              <Form.Item name="status" label="Status" initialValue="all">
+                <Select>
+                  <Option value="all">All</Option>
+                  <Option value="waiting">Waiting</Option>
+                  <Option value="testing">Testing</Option>
+                  <Option value="rejected">Rejected</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col lg={6} xl={3}>
+              <Form.Item name="result" label="Result" initialValue="all">
+                <Select>
+                  <Option value="all">All</Option>
+                  <Option value="OK">OK</Option>
+                  <Option value="NG">NG</Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={[16]}>
-            <Col span={12}>
-              <Form.Item label="Model">
+            <Col lg={12} xl={6}>
+              <Form.Item label="User">
                 <Input.Group compact>
                   <Form.Item
-                    name={["address", "province"]}
+                    name={["user", "userType"]}
+                    initialValue="all"
                     noStyle
-                    rules={[
-                      { required: true, message: "Province is required" },
-                    ]}
                   >
-                    <Select style={{ width: "30%" }} placeholder="province">
-                      <Option value="0">전체</Option>
-                      <Option value="1">의뢰자</Option>
-                      <Option value="2">검토자</Option>
-                      <Option value="3">승인자</Option>
+                    <Select style={{ width: "35%" }}>
+                      <Option value="all">All</Option>
+                      <Option value="requester">Requester</Option>
+                      <Option value="tester">Tester</Option>
+                      <Option value="planner">Planner</Option>
                     </Select>
                   </Form.Item>
-                  <Form.Item
-                    name={["address", "street"]}
-                    noStyle
-                    label="Model"
-                    rules={[{ required: true, message: "Street is required" }]}
-                  >
+                  <Form.Item name={["user", "userName"]} noStyle>
                     <Input
-                      style={{ width: "70%" }}
+                      style={{ width: "65%" }}
                       placeholder="Input street"
                     />
                   </Form.Item>
                 </Input.Group>
               </Form.Item>
             </Col>
-            <Col span={12}>
-              <Form.Item label="Model">
+            <Col lg={12} xl={6}>
+              <Form.Item label="Date">
                 <Input.Group compact>
-                  <Form.Item
-                    name={["address", "province"]}
-                    noStyle
-                    rules={[
-                      { required: true, message: "Province is required" },
-                    ]}
-                  >
-                    <Select style={{ width: "30%" }} placeholder="province">
-                      <Option value="0">등록일자</Option>
-                      <Option value="1">승인일자</Option>
+                  <Form.Item name={["dateType", "dateValue"]} noStyle>
+                    <Select style={{ width: "35%" }} defaultValue="Requested">
+                      <Option value="Requested">Requested</Option>
+                      <Option value="Approved">Approved</Option>
                     </Select>
-                    <DatePicker.RangePicker style={{ width: "70%" }} />
+                    <DatePicker.RangePicker
+                      style={{ width: "65%" }}
+                      format="YY/MM/DD"
+                    />
                   </Form.Item>
                 </Input.Group>
               </Form.Item>

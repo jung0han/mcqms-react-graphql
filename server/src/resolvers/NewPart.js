@@ -16,15 +16,15 @@ function tester(parent, args, context) {
     .tester();
 }
 
-function vender(parent, args, context) {
+function vendor(parent, args, context) {
   return context.prisma.newPart
     .findUnique({ where: { id: parent.id } })
-    .vender();
+    .vendor();
 }
 
 module.exports = {
   requester,
   planner,
   tester,
-  vender,
+  vendor,
 };

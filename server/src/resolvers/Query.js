@@ -39,7 +39,49 @@ async function newPartList(parent, args, context, info) {
   const count = await context.prisma.newPart.count({ where });
 
   return {
-    id: "main-lists",
+    id: "newpart-lists",
+    lists,
+    count,
+  };
+}
+
+async function partList(parent, args, context, info) {
+  const where = args.filter
+    ? {
+        OR: [
+          { partName: { contains: args.filter } },
+          { partNo: { contains: args.filter } },
+        ],
+      }
+    : {};
+
+  const lists = await context.prisma.part.findMany({ where });
+
+  const count = await context.prisma.part.count({ where });
+
+  return {
+    id: "part-lists",
+    lists,
+    count,
+  };
+}
+
+async function userList(parent, args, context, info) {
+  const where = args.filter
+    ? {
+        OR: [
+          { name: { contains: args.filter } },
+          { department: { contains: args.filter } },
+        ],
+      }
+    : {};
+
+  const lists = await context.prisma.user.findMany({ where });
+
+  const count = await context.prisma.user.count({ where });
+
+  return {
+    id: "user-lists",
     lists,
     count,
   };
@@ -48,4 +90,6 @@ async function newPartList(parent, args, context, info) {
 module.exports = {
   feed,
   newPartList,
+  partList,
+  userList,
 };

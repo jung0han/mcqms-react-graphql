@@ -29,7 +29,8 @@ model User {
   requesterNewParts NewPart[] @relation("requesterNewParts")
   planerNewParts    NewPart[] @relation("plannerNewParts")
   testerNewParts    NewPart[] @relation("testerNewParts")
-  Vender            Vender[]
+  Vendor            Vendor[]
+  Part              Part[]
 }
 
 model Vote {
@@ -46,12 +47,12 @@ model NewPart {
   id          Int      @id @default(autoincrement())
   model       String
   partNo      String   @unique
-  vender      Vender   @relation(fields: [venderId], references: [id])
-  venderId    Int
+  vendor      Vendor   @relation(fields: [vendorId], references: [id])
+  vendorId    Int      @default(1)
   category    String
-  type        String
+  type        String   @default("New")
   sequence    Int      @default(1)
-  status      String   @default("waiting")
+  status      String   @default("Waiting")
   requesterId Int
   requester   User     @relation("requesterNewParts", fields: [requesterId], references: [id])
   plannerId   Int
@@ -61,7 +62,7 @@ model NewPart {
   createdAt   DateTime @default(now())
 }
 
-model Vender {
+model Vendor {
   id        Int       @id @default(autoincrement())
   name      String
   code      String    @unique
@@ -69,4 +70,15 @@ model Vender {
   addedById Int
   createdAt DateTime  @default(now())
   NewPart   NewPart[]
+}
+
+model Part {
+  id        Int      @id @default(autoincrement())
+  partNo    String   @unique
+  partName  String
+  vendor    String
+  category  String
+  addedBy   User     @relation(fields: [addedById], references: [id])
+  addedById Int
+  createdAt DateTime @default(now())
 }

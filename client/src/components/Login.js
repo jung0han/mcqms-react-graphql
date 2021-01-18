@@ -4,8 +4,18 @@ import { useHistory } from "react-router";
 import { AUTH_TOKEN } from "../constants";
 
 const SIGNUP_MUTATION = gql`
-  mutation SignupMutation($email: String!, $password: String!, $name: String!) {
-    signup(email: $email, password: $password, name: $name) {
+  mutation SignupMutation(
+    $email: String!
+    $password: String!
+    $name: String!
+    $department: String!
+  ) {
+    signup(
+      email: $email
+      password: $password
+      name: $name
+      department: $department
+    ) {
       token
     }
   }
@@ -43,6 +53,7 @@ const Login = () => {
     variables: {
       name: formState.name,
       email: formState.email,
+      department: formState.department,
       password: formState.password,
     },
     onCompleted: ({ signup }) => {
@@ -56,17 +67,30 @@ const Login = () => {
       <h4 className="mv3">{formState.login ? "Login" : "Sign Up"}</h4>
       <div className="flex flex-column">
         {!formState.login && (
-          <input
-            value={formState.name}
-            onChange={(e) =>
-              setFormState({
-                ...formState,
-                name: e.target.value,
-              })
-            }
-            type="text"
-            placeholder="Your name"
-          />
+          <>
+            <input
+              value={formState.name}
+              onChange={(e) =>
+                setFormState({
+                  ...formState,
+                  name: e.target.value,
+                })
+              }
+              type="text"
+              placeholder="Your name"
+            />
+            <input
+              value={formState.department}
+              onChange={(e) =>
+                setFormState({
+                  ...formState,
+                  department: e.target.value,
+                })
+              }
+              type="text"
+              placeholder="Your department"
+            />
+          </>
         )}
         <input
           value={formState.email}

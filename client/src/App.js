@@ -10,6 +10,7 @@ import HeaderMenu from "./container/layout/HeadMenu";
 import SideMenu from "./container/layout/SideMenu";
 import RequestList from "./container/pages/DevManage/RequestList";
 import Header from "./components/Header";
+import PartsList from "./container/pages/Common/PartsList";
 
 const App = () => {
   return (
@@ -32,6 +33,7 @@ const App = () => {
               <Route exact path="/top" component={LinkList} />
               <Route exact path="/new/:page" component={LinkList} />
               <Route exavt path="/dqm" component={RequestList} />
+              <Route exavt path="/info/parts" component={PartsList} />
             </Switch>
           </Layout>
         </Layout>

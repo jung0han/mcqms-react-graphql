@@ -1,6 +1,8 @@
 type Query {
   info: String!
   newPartList(filter: String): NewPartList!
+  userList(filter: String): UserList!
+  partList(filter: String): PartList!
   feed(filter: String, skip: Int, take: Int, orderBy: LinkOrderByInput): Feed!
 }
 
@@ -16,11 +18,23 @@ type NewPartList {
   count: Int!
 }
 
+type UserList {
+  id: ID!
+  lists: [User!]!
+  count: Int!
+}
+
+type PartList {
+  id: ID!
+  lists: [Part!]!
+  count: Int!
+}
+
 type NewPart {
   id: ID!
   model: String!
   partNo: String!
-  vender: Vender
+  vendor: Vendor
   category: String
   type: String
   sequence: Int
@@ -32,10 +46,20 @@ type NewPart {
   createdAt: DateTime!
 }
 
-type Vender {
+type Vendor {
   id: ID!
   name: String!
   code: String!
+  addedBy: User
+  createdAt: DateTime!
+}
+
+type Part {
+  id: ID!
+  partNo: String!
+  partName: String!
+  vendor: String!
+  category: String!
   addedBy: User
   createdAt: DateTime!
 }
@@ -45,15 +69,21 @@ type Mutation {
   addNewPart(
     model: String!
     partNo: String!
-    venderId: ID!
+    vendorId: ID!
     category: String!
-    type: String!
     sequence: Int
     status: String
     plannerId: ID!
     testerId: ID!
   ): NewPart!
-  addVender(name: String!, code: String!): Vender!
+  addPart(
+    partNo: String!
+    partName: String!
+    vendor: String!
+    category: String!
+  ): Part!
+  addVendor(name: String!, code: String!): Vendor!
+  deletePart(id: ID): Part
   deletePost(id: ID): Link
   signup(
     email: String!
@@ -83,6 +113,7 @@ type User {
   links: [Link!]!
   newParts: [NewPart!]!
   votes: Vote
+  requesterNewParts: [NewPart!]!
 }
 
 type Link {

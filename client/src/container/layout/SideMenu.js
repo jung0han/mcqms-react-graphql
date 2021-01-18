@@ -4,9 +4,18 @@ import { Layout, Menu } from "antd";
 const { SubMenu } = Menu;
 const { Sider } = Layout;
 
+function handleClick(e) {
+  console.log("click", e);
+}
+
 const SideMenu = () => {
   return (
-    <Sider width={200} className="site-layout-background">
+    <Sider
+      onClick={handleClick}
+      style={{ width: 256 }}
+      mode="vertical"
+      className="site-layout-background"
+    >
       <Menu
         mode="inline"
         defaultSelectedKeys={["1"]}

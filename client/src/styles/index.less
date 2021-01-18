@@ -2,10 +2,26 @@
 
 @primary-color: #d6336c;
 
-#body {
+@font-face {
+  font-family: LGSmHaT;
+  src: url("fonts/LGSmHaTR.woff?#iefix") format("woff"), local(LGSmHaTR),
+    url("fonts/LGSmHaTR.ttf") format("truetype");
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: LGSmHaT;
+  src: url("fonts/LGSmHaTSB.woff?#iefix") format("woff"), local(LGSmHaTSB),
+    url("fonts/LGSmHaTSB.ttf") format("truetype");
+  font-style: normal;
+  font-weight: bold;
+}
+
+body {
   margin: 0;
   padding: 0;
-  font-family: Verdana, Geneva, sans-serif;
+  font-family: "LGSmHaT" !important;
 }
 
 #input {
