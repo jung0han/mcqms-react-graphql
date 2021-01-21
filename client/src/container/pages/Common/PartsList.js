@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useQuery, gql, useMutation, NetworkStatus } from "@apollo/client";
+import { useQuery, gql, useMutation } from "@apollo/client";
 // import { Link } from "react-router-dom";
 import styled from "styled-components";
 import {
@@ -17,9 +17,9 @@ import {
   Space,
   Radio,
   Popconfirm,
-  DatePicker,
   message,
   Typography,
+  Result,
 } from "antd";
 const { Link } = Typography;
 
@@ -27,7 +27,7 @@ const { Content } = Layout;
 const { Option } = Select;
 
 export const PARTS_QUERY = gql`
-  query PartsQuery($filter: String) {
+  query PartsQuery($filter: PartsFilterByInput) {
     partList(filter: $filter) {
       id
       lists {
@@ -62,18 +62,8 @@ export const USER_QUERY = gql`
 `;
 
 const CREATE_PART_MUTATION = gql`
-  mutation PartMutation(
-    $partNo: String!
-    $partName: String!
-    $vendor: String!
-    $category: String!
-  ) {
-    addPart(
-      partNo: $partNo
-      partName: $partName
-      vendor: $vendor
-      category: $category
-    ) {
+  mutation PartMutation($info: AddPartByInput) {
+    addPart(info: $info) {
       id
     }
   }
@@ -87,14 +77,14 @@ const DELTET_PART_MUTATION = gql`
   }
 `;
 
-function onChange(pagination, filters, sorter, extra) {
-  console.log("params", pagination, filters, sorter, extra);
-}
-
 const StyledPageHeader = styled(PageHeader)`
   padding-left: 0px;
   padding-top: 0px;
   padding-right: 0px;
+`;
+
+const StyledResult = styled(Result)`
+  border: 1px solid #d9d9d9;
 `;
 
 const SearchForm = styled(Form)`
@@ -121,7 +111,7 @@ const CreateForm = ({ visible, onCreate, onCancel }) => {
   return (
     <Modal
       visible={visible}
-      title="신규 부품 생성"
+      title="Create part information"
       okText="Create"
       cancelText="Cancel"
       onCancel={onCancel}
@@ -186,20 +176,10 @@ const CreateForm = ({ visible, onCreate, onCancel }) => {
               <Select placeholder="Please select category">
                 <Option value="Circuit">Circuit</Option>
                 <Option value="Mechanical">Mechanical</Option>
-                <Option value="Accessory">Accessory</Option>
               </Select>
             </Form.Item>
           </Col>
         </Row>
-        <Form.Item
-          name="modifier"
-          className="collection-create-form_last-form-item"
-        >
-          <Radio.Group>
-            <Radio value="public">Public</Radio>
-            <Radio value="private">Private</Radio>
-          </Radio.Group>
-        </Form.Item>
       </Form>
     </Modal>
   );
@@ -211,12 +191,12 @@ const CreateForm = ({ visible, onCreate, onCancel }) => {
 
 const PartsList = ({ history }) => {
   const [visible, setVisible] = useState(false);
+  const [searchFilter, setSearchFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
 
   const [form] = Form.useForm();
 
-  const { data, loading, error, refetch } = useQuery(PARTS_QUERY, {
-    fetchPolicy: "cache-and-network",
-  });
+  const { data, loading, error, refetch } = useQuery(PARTS_QUERY);
 
   const [createPart] = useMutation(CREATE_PART_MUTATION);
   const [deletePart] = useMutation(DELTET_PART_MUTATION);
@@ -228,15 +208,19 @@ const PartsList = ({ history }) => {
   const onCreate = (values) => {
     createPart({
       variables: {
-        partNo: values.partNo,
-        partName: values.partName,
-        vendor: values.vendor,
-        category: values.category,
+        info: {
+          partNo: values.partNo,
+          partName: values.partName,
+          vendor: values.vendor,
+          category: values.category,
+        },
       },
     })
       .then(() => setVisible(false))
       .then(() => refetch())
-      .then(() => message.success("Part added"));
+      .then(() =>
+        message.success(values.partNo + "이 성공적으로 추가되었습니다.")
+      );
   };
 
   const onDelete = (values) => {
@@ -246,7 +230,7 @@ const PartsList = ({ history }) => {
       },
     })
       .then(() => refetch())
-      .then(() => message.success("Part deleted"));
+      .then(() => message.success(values.partNo + "이 삭제되었습니다."));
   };
 
   const columns = [
@@ -284,7 +268,7 @@ const PartsList = ({ history }) => {
     <>
       <Breadcrumb style={{ margin: "16px 0" }}>
         <Breadcrumb.Item>Home</Breadcrumb.Item>
-        <Breadcrumb.Item>Part DQM</Breadcrumb.Item>
+        <Breadcrumb.Item>Part infomation</Breadcrumb.Item>
       </Breadcrumb>
       <Content
         className="site-layout-background"
@@ -296,8 +280,7 @@ const PartsList = ({ history }) => {
       >
         <StyledPageHeader
           className="site-page-header"
-          title="Part DQM"
-          subTitle="Request Status"
+          title="Part infomation"
           extra={[
             <Button key="2">Reload</Button>,
             <Button
@@ -328,23 +311,45 @@ const PartsList = ({ history }) => {
           <Row gutter={[16]}>
             {/* xs={} sm={} md={} lg={} xl={} xxl={} */}
             <Col lg={6} xl={3}>
-              <Form.Item name="model" label="Model">
-                <Input placeholder="ex) LGM123" />
+              <Form.Item name="category">
+                <Select
+                  placeholder="Select a category"
+                  onSelect={(e) => setCategoryFilter(e)}
+                >
+                  <Option value="Circuit">Circuit</Option>
+                  <Option value="Mechanical">Mechanical</Option>
+                </Select>
               </Form.Item>
             </Col>
             <Col lg={6} xl={3}>
-              <Form.Item name="partNo" label="Part Number">
-                <Input placeholder="ex) EAB12345678" />
+              <Form.Item name="search_text">
+                <Input
+                  placeholder="Contains text"
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                />
               </Form.Item>
             </Col>
-            <Col span={6} style={{ textAlign: "right" }}>
+            <Col lg={6} xl={3}>
               <Space>
-                <Button type="primary" htmlType="submit">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  onClick={() =>
+                    refetch({
+                      filter: {
+                        contains: searchFilter,
+                        category: categoryFilter,
+                      },
+                    })
+                  }
+                >
                   Search
                 </Button>
                 <Button
                   onClick={() => {
                     form.resetFields();
+                    setSearchFilter("");
+                    refetch({ filter: { contains: "" } });
                   }}
                 >
                   Clear
@@ -353,13 +358,14 @@ const PartsList = ({ history }) => {
             </Col>
           </Row>
         </SearchForm>
-        {error && <pre>{JSON.stringify(error, null, 2)}</pre>}
+        {error && (
+          <StyledResult status="error" title="Sorry, something went wrong." />
+        )}
         {data && (
           <Table
             columns={columns}
             rowKey="id"
             dataSource={data.partList.lists}
-            onChange={onChange}
             size="small"
             bordered
             loading={loading}

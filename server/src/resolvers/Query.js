@@ -49,9 +49,13 @@ async function partList(parent, args, context, info) {
   const where = args.filter
     ? {
         OR: [
-          { partName: { contains: args.filter } },
-          { partNo: { contains: args.filter } },
+          { partName: { contains: args.filter.contains } },
+          { partNo: { contains: args.filter.contains } },
+          { vendor: { contains: args.filter.contains } },
         ],
+        AND: {
+          category: { contains: args.filter.category },
+        },
       }
     : {};
 

@@ -2,7 +2,7 @@ type Query {
   info: String!
   newPartList(filter: String): NewPartList!
   userList(filter: String): UserList!
-  partList(filter: String): PartList!
+  partList(filter: PartsFilterByInput): PartList!
   feed(filter: String, skip: Int, take: Int, orderBy: LinkOrderByInput): Feed!
 }
 
@@ -76,12 +76,7 @@ type Mutation {
     plannerId: ID!
     testerId: ID!
   ): NewPart!
-  addPart(
-    partNo: String!
-    partName: String!
-    vendor: String!
-    category: String!
-  ): Part!
+  addPart(info: AddPartByInput): Part!
   addVendor(name: String!, code: String!): Vendor!
   deletePart(id: ID): Part
   deletePost(id: ID): Link
@@ -135,6 +130,18 @@ input LinkOrderByInput {
   description: Sort
   url: Sort
   createdAt: Sort
+}
+
+input PartsFilterByInput {
+  category: String
+  contains: String
+}
+
+input AddPartByInput {
+  partNo: String!
+  partName: String!
+  vendor: String!
+  category: String!
 }
 
 enum Sort {

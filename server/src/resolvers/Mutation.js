@@ -55,10 +55,10 @@ async function addPart(parent, args, context, info) {
 
   const addPart = await context.prisma.part.create({
     data: {
-      partNo: args.partNo,
-      partName: args.partName,
-      vendor: args.vendor,
-      category: args.category,
+      partNo: args.info.partNo,
+      partName: args.info.partName,
+      vendor: args.info.vendor,
+      category: args.info.category,
       addedBy: { connect: { id: userId } },
     },
   });
